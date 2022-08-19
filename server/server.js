@@ -1,21 +1,21 @@
 const express = require('express');
 const models = require('./models');
-const expressGraphQL = require('express-graphql');
+const {graphqlHTTP} = require('express-graphql');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
 const passportConfig = require('./services/auth');
-const MongoStore = require('connect-mongo')(session);
+const MongoStore = require('connect-mongo');
 const schema = require('./schema/schema');
 
 // Create a new Express application
 const app = express();
 
 // Replace with your mongoLab URI
-const MONGO_URI = '';
+const MONGO_URI = 'mongodb://localhost:27017/auth_graphql';
 
 // Mongoose's built in promise library is deprecated, replace it with ES2015 Promise
-mongoose.Promise = global.Promise;
+//mongoose.Promise = global.Promise;
 
 // Connect to the mongoDB instance and log a message
 // on success or failure
@@ -33,21 +33,20 @@ app.use(session({
   resave: true,
   saveUninitialized: true,
   secret: 'aaabbbccc',
-  store: new MongoStore({
-    url: MONGO_URI,
-    autoReconnect: true
+  store: MongoStore.create({
+    mongoUrl: MONGO_URI
   })
 }));
 
 // Passport is wired into express as a middleware. When a request comes in,
 // Passport will examine the request's session (as set by the above config) and
-// assign the current user to the 'req.user' object.  See also servces/auth.js
+// assign the current user to the 'req.user' object.  See also services/auth.js
 app.use(passport.initialize());
 app.use(passport.session());
 
 // Instruct Express to pass on any request made to the '/graphql' route
 // to the GraphQL instance.
-app.use('/graphql', expressGraphQL({
+app.use('/graphql', graphqlHTTP({
   schema,
   graphiql: true
 }));
