@@ -21,6 +21,13 @@ const RootQueryType = new GraphQLObjectType({
         return User.findById(args.id);
       }
     },
+    currentUser: {
+      type: UserType,
+      args: {},
+      resolve(parentValue, args, context) {
+        return context.user;
+      }
+    },
     userByEmail: {
       type: UserType,
       args: {
@@ -41,8 +48,8 @@ const mutation = new GraphQLObjectType({
     signup: {
       type: UserType,
       args: {
-        email: {type: GraphQLString},
-        password: {type: GraphQLString}
+        email: {type: new GraphQLNonNull(GraphQLString)},
+        password: {type: new GraphQLNonNull(GraphQLString)}
       },
       resolve(parentValue, args, context) {
         return signup({email: args.email, password: args.password, req: context});
@@ -52,16 +59,20 @@ const mutation = new GraphQLObjectType({
       type: UserType,
       args: { },
       resolve(parentValue, args, context) {
-        const logout = util.promisify(context.logout);
         const user = context.user;
-        return logout().then(()=> {return user});
+        return new Promise((resolve, reject) => {
+          context.logout(function(err){
+            if (err) {reject(next(err))};
+            resolve(user);
+          })
+        });
       }
     },
     login: {
       type: UserType,
       args: {
-        email: {type: GraphQLString},
-        password: {type: GraphQLString}
+        email: {type: new GraphQLNonNull(GraphQLString)},
+        password: {type: new GraphQLNonNull(GraphQLString)}
       },
       resolve(parentValue, args, context) {
         return login({email: args.email, password: args.password, req: context});
