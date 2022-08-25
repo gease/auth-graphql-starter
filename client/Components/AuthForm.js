@@ -1,7 +1,7 @@
 import React from "react";
 import {useState} from "react";
 import {Navigate} from "react-router-dom";
-import {useMutation} from "@apollo/client";
+import {useMutation, useQuery} from "@apollo/client";
 
 
 import {CURRENT_USER} from "../queries";
@@ -10,6 +10,12 @@ const AuthForm = ({mutation, button}) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [mutate, {data, loading, error}] = useMutation(mutation, {refetchQueries: [CURRENT_USER]});
+    const {loading: loadingUser, data: dataUser, error: errorUser } = useQuery(CURRENT_USER);
+
+    if ((dataUser && dataUser.currentUser))  {
+        return <Navigate to='/' />
+    }
+
     let errorsDisplayed = '';
     if (error) {
         if (error.graphQLErrors) {
@@ -19,12 +25,9 @@ const AuthForm = ({mutation, button}) => {
             errorsDisplayed = <div className="card-content white-text">{error.networkError.message}</div>;
         }
     }
-    if (data && data.login)  {
-        return <Navigate to='/' />
-    }
     const onSubmit = (event) => {
         event.preventDefault();
-        mutate({variables:{email, password}});
+        mutate({variables:{email, password}}).catch(error => {});
     }
 
     return <form onSubmit={onSubmit}>
