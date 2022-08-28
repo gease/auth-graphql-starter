@@ -8,6 +8,7 @@ import App from "./Components/App";
 import Signup from "./Components/Signup";
 import Login from "./Components/Login";
 import Main from "./Components/Main";
+import Dashboard from "./Components/Dashboard";
 
 const link = createHttpLink({
     uri: '/graphql',
@@ -26,6 +27,7 @@ const Root = () => {
                 <Routes>
                     <Route path='/' element={<App/>}>
                         <Route index element={<Main/>}/>
+                        <Route path='dashboard' element={<Dashboard/>}/>
                         <Route path='signup' element={<Signup/>}/>
                         <Route path='login' element={<Login/>}/>
                     </Route>
